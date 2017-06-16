@@ -7,6 +7,7 @@ $app = new \Slim\Slim();
 
 $app->post('/login','login'); /* User login */
 $app->post('/signup','signup'); /* User Signup  */
+$app->post('/feed','feed'); /* User Feeds  */
 
 //$app->post('/userDetails','userDetails'); /* User Details */
 
@@ -35,7 +36,7 @@ function login() {
         if(!empty($userData))
         {
             $user_id=$userData->user_id;
-            $userData->token = apiKey($user_id);
+            $userData->token = apiToken($user_id);
         }
         
         $db = null;
@@ -104,19 +105,51 @@ function signup() {
 
 /* ### internal Username Details ### */
 function internalUserDetails($input) {
-    $sql = "SELECT user_id, name, email, username FROM users WHERE username=:input or email=:input";
+    
     try {
         $db = getDB();
+        $sql = "SELECT user_id, name, email, username FROM users WHERE username=:input or email=:input";
         $stmt = $db->prepare($sql);
         $stmt->bindParam("input", $input,PDO::PARAM_STR);
         $stmt->execute();
         $usernameDetails = $stmt->fetch(PDO::FETCH_OBJ);
-        $usernameDetails->token = apiKey($usernameDetails->user_id);
+        $usernameDetails->token = apiToken($usernameDetails->user_id);
+        $db = null;
         return $usernameDetails;
         
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
+    
+}
+
+function feed(){
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $user_id=$data->user_id;
+    $token=$data->token;
+    
+    $systemToken=apiToken($user_id);
+   
+    try {
+         
+        if($systemToken == $token){
+            $feedData = '';
+            $db = getDB();
+            $sql = "SELECT * FROM feed WHERE user_id_fk=:user_id";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            $stmt->execute();
+            $feedData = $stmt->fetchAll(PDO::FETCH_OBJ);
+            $db = null;
+            echo '{"feedData": ' . json_encode($feedData) . '}';
+        }
+       
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+    
+    
     
 }
 
