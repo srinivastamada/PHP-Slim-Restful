@@ -7,7 +7,7 @@ password varchar(300),
 name varchar(200), 
 email varchar(300)); 
  
-CREATE TABLE feeds(
+CREATE TABLE feed(
 feed_id int PRIMARY KEY AUTO_INCREMENT, 
 feed text
 );
