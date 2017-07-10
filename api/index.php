@@ -40,7 +40,14 @@ function login() {
         }
         
         $db = null;
-        echo '{"userData": ' . json_encode($userData) . '}';
+         if($userData){
+               $userData = json_encode($userData);
+                echo '{"userData": ' .$userData . '}';
+            } else {
+               echo '{"error":{"text":"Bad request wrong username and password"}}';
+            }
+
+           
     }
     catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
@@ -93,8 +100,19 @@ function signup() {
             }
             
             $db = null;
-            
-            echo '{"userData": ' . json_encode($userData) . '}';
+         
+
+            if($userData){
+               $userData = json_encode($userData);
+                echo '{"userData": ' .$userData . '}';
+            } else {
+               echo '{"error":{"text":"Enter valid data"}}';
+            }
+
+           
+        }
+        else{
+            echo '{"error":{"text":"Enter valid data"}}';
         }
     }
     catch(PDOException $e) {
@@ -141,8 +159,11 @@ function feed(){
             $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
             $stmt->execute();
             $feedData = $stmt->fetchAll(PDO::FETCH_OBJ);
+           
             $db = null;
             echo '{"feedData": ' . json_encode($feedData) . '}';
+        } else{
+            echo '{"error":{"text":"No access"}}';
         }
        
     } catch(PDOException $e) {
