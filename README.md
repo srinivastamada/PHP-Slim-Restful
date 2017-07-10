@@ -10,6 +10,7 @@ email varchar(300));
 CREATE TABLE feed(
 feed_id int PRIMARY KEY AUTO_INCREMENT, 
 feed text,
-user_id_fk int
+user_id_fk int,
+created int
 );
 ```
