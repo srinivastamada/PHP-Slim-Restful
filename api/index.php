@@ -174,6 +174,52 @@ function feed(){
     
 }
 
+function feedUpdate(){
+
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $user_id=$data->user_id;
+    $token=$data->token;
+    $feed=$data->feed;
+    
+    $systemToken=apiToken($user_id);
+   
+    try {
+         
+        if($systemToken == $token){
+            $feedData = '';
+            $db = getDB();
+            $sql = "INSERT INTO feed ( feed, created, user_id_fk) VALUES (:feed,:created,:user_id)";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("feed", $feed, PDO::PARAM_STR);
+            $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            $created = now();
+            $stmt->bindParam("created", $created, PDO::PARAM_INT);
+            $stmt->execute();
+            //$feedData = $stmt->fetchAll(PDO::FETCH_OBJ);
+
+
+            $sql1 = "SELECT * FROM feed WHERE user_id_fk=:user_id ORDER BY feed_id DESC LIMIT 1";
+            $stmt1 = $db->prepare($sql1);
+            $stmt1->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            $stmt1->execute();
+            $feedData = $stmt1->fetchAll(PDO::FETCH_OBJ);
+
+
+            $db = null;
+            echo '{"feedData": ' . json_encode($feedData) . '}';
+        } else{
+            echo '{"error":{"text":"No access"}}';
+        }
+       
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+}
+
+
+
 
 
 
