@@ -8,7 +8,7 @@ $app = new \Slim\Slim();
 $app->post('/login','login'); /* User login */
 $app->post('/signup','signup'); /* User Signup  */
 $app->post('/feed','feed'); /* User Feeds  */
-
+$app->post('/feedUpdate','feedUpdate'); /* User Feeds  */
 //$app->post('/userDetails','userDetails'); /* User Details */
 
 $app->run();
@@ -154,7 +154,7 @@ function feed(){
         if($systemToken == $token){
             $feedData = '';
             $db = getDB();
-            $sql = "SELECT * FROM feed WHERE user_id_fk=:user_id";
+            $sql = "SELECT * FROM feed WHERE user_id_fk=:user_id ORDER BY feed_id DESC";
             $stmt = $db->prepare($sql);
             $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
             $stmt->execute();
@@ -187,23 +187,25 @@ function feedUpdate(){
     try {
          
         if($systemToken == $token){
+         
+            
             $feedData = '';
             $db = getDB();
             $sql = "INSERT INTO feed ( feed, created, user_id_fk) VALUES (:feed,:created,:user_id)";
             $stmt = $db->prepare($sql);
             $stmt->bindParam("feed", $feed, PDO::PARAM_STR);
             $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
-            $created = now();
+            $created = time();
             $stmt->bindParam("created", $created, PDO::PARAM_INT);
             $stmt->execute();
-            //$feedData = $stmt->fetchAll(PDO::FETCH_OBJ);
+            
 
 
             $sql1 = "SELECT * FROM feed WHERE user_id_fk=:user_id ORDER BY feed_id DESC LIMIT 1";
             $stmt1 = $db->prepare($sql1);
             $stmt1->bindParam("user_id", $user_id, PDO::PARAM_INT);
             $stmt1->execute();
-            $feedData = $stmt1->fetchAll(PDO::FETCH_OBJ);
+            $feedData = $stmt1->fetch(PDO::FETCH_OBJ);
 
 
             $db = null;
