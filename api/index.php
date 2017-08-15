@@ -9,6 +9,7 @@ $app->post('/login','login'); /* User login */
 $app->post('/signup','signup'); /* User Signup  */
 $app->post('/feed','feed'); /* User Feeds  */
 $app->post('/feedUpdate','feedUpdate'); /* User Feeds  */
+$app->post('/feedDelete','feedDelete'); /* User Feeds  */
 //$app->post('/userDetails','userDetails'); /* User Details */
 
 $app->run();
@@ -218,6 +219,41 @@ function feedUpdate(){
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
+}
+
+function feedDelete(){
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $user_id=$data->user_id;
+    $token=$data->token;
+    $feed_id=$data->feed_id;
+    
+    $systemToken=apiToken($user_id);
+   
+    try {
+         
+        if($systemToken == $token){
+            $feedData = '';
+            $db = getDB();
+            $sql = "Delete * FROM feed WHERE user_id_fk=:user_id AND feed_id=:feed_id";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            $stmt->bindParam("feed_id", $feed_id, PDO::PARAM_INT);
+            $stmt->execute();
+            
+           
+            $db = null;
+            echo '{"success":{"text":"Feed deleted"}}';
+        } else{
+            echo '{"error":{"text":"No access"}}';
+        }
+       
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+    
+    
+    
 }
 
 
