@@ -235,7 +235,7 @@ function feedDelete(){
         if($systemToken == $token){
             $feedData = '';
             $db = getDB();
-            $sql = "Delete * FROM feed WHERE user_id_fk=:user_id AND feed_id=:feed_id";
+            $sql = "Delete FROM feed WHERE user_id_fk=:user_id AND feed_id=:feed_id";
             $stmt = $db->prepare($sql);
             $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
             $stmt->bindParam("feed_id", $feed_id, PDO::PARAM_INT);
