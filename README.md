@@ -13,4 +13,10 @@ feed text,
 user_id_fk int,
 created int
 );
+
+CREATE TABLE `emailUsers` (
+  `user_id` int(11) PRIMARY KEY AUTO_INCREMENT,
+  `email` varchar(300) DEFAULT NULL,
+  `name` varchar(100) DEFAULT NULL
+) 
 ```
