@@ -121,6 +121,55 @@ function signup() {
     }
 }
 
+function email() {
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $email=$data->email;
+
+    try {
+       
+        $email_check = preg_match('~^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.([a-zA-Z]{2,4})$~i', $email);
+       
+        if (strlen(trim($email))>0 && $email_check>0)
+        {
+            $db = getDB();
+            $userData = '';
+            $sql = "SELECT user_id FROM emailUsers WHERE email=:email";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("email", $email,PDO::PARAM_STR);
+            $stmt->execute();
+            $mainCount=$stmt->rowCount();
+            $created=time();
+            if($mainCount==0)
+            {
+                
+                /*Inserting user values*/
+                $sql1="INSERT INTO emailUsers(email)VALUES(:email)";
+                $stmt1 = $db->prepare($sql1);
+                $stmt1->bindParam("email", $email,PDO::PARAM_STR);
+                $stmt1->execute();
+                
+                
+            }
+            $userData=internalEmailDetails($email);
+            $db = null;
+            if($userData){
+               $userData = json_encode($userData);
+                echo '{"userData": ' .$userData . '}';
+            } else {
+               echo '{"error":{"text":"Enter valid dataaaa"}}';
+            }
+        }
+        else{
+            echo '{"error":{"text":"Enter valid data"}}';
+        }
+    }
+    
+    catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
 
 /* ### internal Username Details ### */
 function internalUserDetails($input) {
