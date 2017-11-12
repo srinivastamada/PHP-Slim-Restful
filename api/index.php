@@ -196,7 +196,7 @@ function feed(){
     $data = json_decode($request->getBody());
     $user_id=$data->user_id;
     $token=$data->token;
-    
+    $lastCreated = $data->lastCreated;
     $systemToken=apiToken($user_id);
    
     try {
@@ -204,14 +204,31 @@ function feed(){
         if($systemToken == $token){
             $feedData = '';
             $db = getDB();
-            $sql = "SELECT * FROM feed WHERE user_id_fk=:user_id ORDER BY feed_id DESC";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            if($lastCreated){
+                $sql = "SELECT * FROM feed WHERE user_id_fk=:user_id AND created<:lastCreated ORDER BY feed_id DESC LIMIT 10";
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+                $stmt->bindParam("lastCreated", $lastCreated, PDO::PARAM_STR);
+             }
+            else{
+                $sql = "SELECT * FROM feed WHERE user_id_fk=:user_id ORDER BY feed_id DESC LIMIT 10";
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             $feedData = $stmt->fetchAll(PDO::FETCH_OBJ);
            
             $db = null;
-            echo '{"feedData": ' . json_encode($feedData) . '}';
+            if($feedData){
+                echo '{"feedData": ' . json_encode($feedData) . '}';
+            }
+            else{
+                echo '{"feedData": "" }';
+            }
+            
+
+
         } else{
             echo '{"error":{"text":"No access"}}';
         }
