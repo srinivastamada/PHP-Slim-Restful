@@ -68,12 +68,14 @@ function signup() {
     try {
         
         $username_check = preg_match('~^[A-Za-z0-9_]{3,20}$~i', $username);
-        $emain_check = preg_match('~^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.([a-zA-Z]{2,4})$~i', $email);
+        $email_check = preg_match('~^[a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.([a-zA-Z]{2,4})$~i', $email);
         $password_check = preg_match('~^[A-Za-z0-9!@#$%^&*()_]{6,20}$~i', $password);
         
+        echo $email_check.'<br/>'.$email;
         
-        if (strlen(trim($username))>0 && strlen(trim($password))>0 && strlen(trim($email))>0 && $emain_check>0 && $username_check>0 && $password_check>0)
+        if (strlen(trim($username))>0 && strlen(trim($password))>0 && strlen(trim($email))>0 && $email_check>0 && $username_check>0 && $password_check>0)
         {
+            echo 'here';
             $db = getDB();
             $userData = '';
             $sql = "SELECT user_id FROM users WHERE username=:username or email=:email";
@@ -196,7 +198,7 @@ function feed(){
     $data = json_decode($request->getBody());
     $user_id=$data->user_id;
     $token=$data->token;
-    
+    $lastCreated = $data->lastCreated;
     $systemToken=apiToken($user_id);
    
     try {
@@ -204,14 +206,25 @@ function feed(){
         if($systemToken == $token){
             $feedData = '';
             $db = getDB();
-            $sql = "SELECT * FROM feed WHERE user_id_fk=:user_id ORDER BY feed_id DESC";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            if($lastCreated){
+                $sql = "SELECT * FROM feed WHERE user_id_fk=:user_id AND created < :lastCreated ORDER BY feed_id DESC LIMIT 5";
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+                $stmt->bindParam("lastCreated", $lastCreated, PDO::PARAM_STR);
+            }
+            else{
+                $sql = "SELECT * FROM feed WHERE user_id_fk=:user_id ORDER BY feed_id DESC LIMIT 5";
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            }
             $stmt->execute();
             $feedData = $stmt->fetchAll(PDO::FETCH_OBJ);
            
             $db = null;
+            if($feedData)
             echo '{"feedData": ' . json_encode($feedData) . '}';
+            else
+            echo '{"feedData": ""}';
         } else{
             echo '{"error":{"text":"No access"}}';
         }
@@ -219,9 +232,7 @@ function feed(){
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
-    
-    
-    
+
 }
 
 function feedUpdate(){
@@ -299,15 +310,7 @@ function feedDelete(){
        
     } catch(PDOException $e) {
         echo '{"error":{"text":'. $e->getMessage() .'}}';
-    }
-    
-    
+    }   
     
 }
-
-
-
-
-
-
 ?>
