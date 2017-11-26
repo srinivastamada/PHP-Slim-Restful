@@ -292,7 +292,7 @@ function userImage(){
     try {
         if(1){
             $db = getDB();
-            $sql = "INSERT INTO imagesData(b64,uid_fk) VALUES(:b64,:user_id)";
+            $sql = "INSERT INTO imagesData(b64,user_id_fk) VALUES(:b64,:user_id)";
             $stmt = $db->prepare($sql);
             $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
             $stmt->bindParam("b64", $imageB64, PDO::PARAM_STR);
