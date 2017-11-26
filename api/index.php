@@ -221,6 +221,7 @@ function feed(){
             $feedData = $stmt->fetchAll(PDO::FETCH_OBJ);
            
             $db = null;
+
             if($feedData)
             echo '{"feedData": ' . json_encode($feedData) . '}';
             else
@@ -279,6 +280,31 @@ function feedUpdate(){
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }
 
+}
+
+function userImage(){
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $user_id=$data->user_id;
+    $token=$data->token;
+    $imageB64=$data->imageB64;
+    $systemToken=apiToken($user_id);
+    try {
+        if(1){
+            $db = getDB();
+            $sql = "INSERT INTO imagesData(b64,uid_fk) VALUES(:b64,:user_id)";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            $stmt->bindParam("b64", $imageB64, PDO::PARAM_STR);
+            $stmt->execute();
+            $db = null;
+            echo '{"success":{"status":"uploaded"}}';
+        } else{
+            echo '{"error":{"text":"No access"}}';
+        }
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
 }
 
 function feedDelete(){
