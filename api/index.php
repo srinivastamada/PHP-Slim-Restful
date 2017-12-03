@@ -7,10 +7,12 @@ $app = new \Slim\Slim();
 
 $app->post('/login','login'); /* User login */
 $app->post('/signup','signup'); /* User Signup  */
+$app->get('/getFeed','getFeed'); /* User Feeds  */
 $app->post('/feed','feed'); /* User Feeds  */
 $app->post('/feedUpdate','feedUpdate'); /* User Feeds  */
 $app->post('/feedDelete','feedDelete'); /* User Feeds  */
-//$app->post('/userDetails','userDetails'); /* User Details */
+$app->post('/getImages', 'getImages');
+
 
 $app->run();
 
@@ -193,6 +195,39 @@ function internalUserDetails($input) {
     
 }
 
+function getFeed(){
+  
+   
+    try {
+         
+        if(1){
+            $feedData = '';
+            $db = getDB();
+          
+                $sql = "SELECT * FROM feed  ORDER BY feed_id DESC LIMIT 15";
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+                $stmt->bindParam("lastCreated", $lastCreated, PDO::PARAM_STR);
+          
+            $stmt->execute();
+            $feedData = $stmt->fetchAll(PDO::FETCH_OBJ);
+           
+            $db = null;
+
+            if($feedData)
+            echo '{"feedData": ' . json_encode($feedData) . '}';
+            else
+            echo '{"feedData": ""}';
+        } else{
+            echo '{"error":{"text":"No access"}}';
+        }
+       
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+
+}
+
 function feed(){
     $request = \Slim\Slim::getInstance()->request();
     $data = json_decode($request->getBody());
@@ -282,30 +317,7 @@ function feedUpdate(){
 
 }
 
-function userImage(){
-    $request = \Slim\Slim::getInstance()->request();
-    $data = json_decode($request->getBody());
-    $user_id=$data->user_id;
-    $token=$data->token;
-    $imageB64=$data->imageB64;
-    $systemToken=apiToken($user_id);
-    try {
-        if(1){
-            $db = getDB();
-            $sql = "INSERT INTO imagesData(b64,user_id_fk) VALUES(:b64,:user_id)";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
-            $stmt->bindParam("b64", $imageB64, PDO::PARAM_STR);
-            $stmt->execute();
-            $db = null;
-            echo '{"success":{"status":"uploaded"}}';
-        } else{
-            echo '{"error":{"text":"No access"}}';
-        }
-    } catch(PDOException $e) {
-        echo '{"error":{"text":'. $e->getMessage() .'}}';
-    }
-}
+
 
 function feedDelete(){
     $request = \Slim\Slim::getInstance()->request();
@@ -338,5 +350,56 @@ function feedDelete(){
         echo '{"error":{"text":'. $e->getMessage() .'}}';
     }   
     
+}
+$app->post('/userImage','userImage'); /* User Details */
+function userImage(){
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $user_id=$data->user_id;
+    $token=$data->token;
+    $imageB64=$data->imageB64;
+    $systemToken=apiToken($user_id);
+    try {
+        if(1){
+            $db = getDB();
+            $sql = "INSERT INTO imagesData(b64,user_id_fk) VALUES(:b64,:user_id)";
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("user_id", $user_id, PDO::PARAM_INT);
+            $stmt->bindParam("b64", $imageB64, PDO::PARAM_STR);
+            $stmt->execute();
+            $db = null;
+            echo '{"success":{"status":"uploaded"}}';
+        } else{
+            echo '{"error":{"text":"No access"}}';
+        }
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
+}
+
+$app->post('/getImages', 'getImages');
+function getImages(){
+    $request = \Slim\Slim::getInstance()->request();
+    $data = json_decode($request->getBody());
+    $user_id=$data->user_id;
+    $token=$data->token;
+    
+    $systemToken=apiToken($user_id);
+    try {
+        if(1){
+            $db = getDB();
+            $sql = "SELECT b64 FROM imagesData";
+            $stmt = $db->prepare($sql);
+           
+            $stmt->execute();
+            $imageData = $stmt->fetchAll(PDO::FETCH_OBJ);
+            $db = null;
+            echo '{"imageData": ' . json_encode($imageData) . '}';
+        } else{
+            echo '{"error":{"text":"No access"}}';
+        }
+    } catch(PDOException $e) {
+        echo '{"error":{"text":'. $e->getMessage() .'}}';
+    }
 }
 ?>
