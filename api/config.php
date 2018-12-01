@@ -8,7 +8,6 @@ define('DB_SERVER', 'localhost');
 define('DB_USERNAME', 'root');
 define('DB_PASSWORD', '');
 define('DB_DATABASE', 'banan');
-define("BASE_URL", "http://localhost/PHP-Slim-Restful/api/");
 define("SITE_KEY", 'yourSecretKey');
 
 
